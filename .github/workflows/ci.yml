@@ -1,0 +1,35 @@
+name: CI Recommendation Engine Validation
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install --upgrade pip nbformat
+      - name: Validate Recommendation Notebook
+        run: |
+          python -c "
+          import nbformat
+          with open('Ecommerce Product Recommendation Analysis.ipynb', 'r', encoding='utf-8') as f:
+              nb = nbformat.read(f, as_version=4)
+          print(f'Successfully validated notebook: {len(nb.cells)} cells')
+          "
+      - name: Verify CSV datasets
+        run: |
+          python -c "
+          import csv
+          for path in ['customer_data_collection.csv', 'product_recommendation_data.csv']:
+              with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+                  reader = csv.reader(f)
+                  rows = sum(1 for _ in reader)
+              print(f'{path} verified with {rows} rows')
+          "
